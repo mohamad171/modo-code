@@ -8,8 +8,8 @@ services:
       - /$HOME/neo4j/config:/config
       - /$HOME/neo4j/data:/data
       - /$HOME/neo4j/plugins:/plugins
-    environment:
-      - NEO4J_AUTH=neo4j/Fax159159
+    env_file:
+      - .env
     ports:
       - "7474:7474"
     restart: always
@@ -28,8 +28,8 @@ services:
       - .:/code
       - ./media:/code/media
       - ./statics:/code/statics
-    environment:
-      - NEO4J_AUTH=neo4j/Fax159159
+    env_file:
+      - .env
     ports:
       - 8017:7030
     depends_on:
@@ -48,6 +48,8 @@ services:
       context: .
       dockerfile: Dockerfile
     command: celery -A modo_code worker -l INFO -c 8
+    env_file:
+      - .env
     volumes:
       - media:/code/media
     depends_on:
@@ -59,6 +61,8 @@ services:
       context: .
       dockerfile: Dockerfile
     command: celery -A modo_code beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - .env
     volumes:
       - ./media:/code/media
     depends_on:
