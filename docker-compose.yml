@@ -1,0 +1,72 @@
+version: "3.3"
+
+services:
+  graph_db:
+    image: neo4j:latest
+    volumes:
+      - /$HOME/neo4j/logs:/logs
+      - /$HOME/neo4j/config:/config
+      - /$HOME/neo4j/data:/data
+      - /$HOME/neo4j/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/Fax159159
+    ports:
+      - "7474:7474"
+    restart: always
+  vector_db:
+      image: chromadb/chroma:0.6.3
+      volumes:
+        - ./chromadb:/chroma/chroma
+      environment:
+        - IS_PERSISTENT=TRUE
+        - PERSIST_DIRECTORY=/chroma/chroma
+        - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
+  web:
+    build: .
+    command: /bin/sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:7030"
+    volumes:
+      - .:/code
+      - ./media:/code/media
+      - ./statics:/code/statics
+    environment:
+      - NEO4J_AUTH=neo4j/Fax159159
+    ports:
+      - 8017:7030
+    depends_on:
+        - graph_db
+        - vector_db
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - ./cache:/var/lib/redis/data
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A modo_code worker -l INFO -c 8
+    volumes:
+      - media:/code/media
+    depends_on:
+      - graph_db
+      - vector_db
+    networks:
+      - mynetwork
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A modo_code beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./media:/code/media
+    depends_on:
+      - graph_db
+      - vector_db
+
+volumes:
+  media:
+  static:

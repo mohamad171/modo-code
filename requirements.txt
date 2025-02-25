@@ -1,0 +1,10 @@
+tree-sitter-languages==1.10.2
+llama-index==0.12.19
+json5==0.10.0
+llama-index-packs-code-hierarchy==0.4.1
+neo4j==5.28.1
+sentence-transformers
+django-celery-beat==2.7.0
+Django==5.1.4
+django-cors-headers==4.6.0
+djangorestframework==3.15.2
