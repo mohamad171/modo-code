@@ -53,8 +53,6 @@ services:
     depends_on:
       - graph_db
       - vector_db
-    networks:
-      - mynetwork
 
   celery_beat:
     build:
