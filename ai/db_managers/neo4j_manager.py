@@ -90,14 +90,14 @@ class Neo4jManager(BaseDBManager):
     def create_nodes(self, nodeList: List[Any]):
         # Function to create nodes in the Neo4j database
         with self.driver.session() as session:
-            session.write_transaction(
+            session.execute_write(
                 self._create_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
             )
 
     def create_edges(self, edgesList: List[Any]):
         # Function to create edges between nodes in the Neo4j database
         with self.driver.session() as session:
-            session.write_transaction(self._create_edges_txn, edgesList, 3000, entityId=self.entityId)
+            session.execute_write(self._create_edges_txn, edgesList, 3000, entityId=self.entityId)
 
     def format_query(self, query: str):
         # Function to format the query to be used in the fulltext index

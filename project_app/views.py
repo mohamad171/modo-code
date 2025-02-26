@@ -3,8 +3,8 @@ from rest_framework import generics, mixins
 from rest_framework.permissions import IsAuthenticated
 
 from project_app.models import Project
-from project_app.serializers import ProjectSerializer
-from utils import StandardResultsSetPagination
+from project_app.serializers import ProjectSerializer,SaveNodeAndRelationshipsSerializer
+from utils import StandardResultsSetPagination, success_response
 
 
 class ProjectsView(generics.GenericAPIView,mixins.ListModelMixin,mixins.CreateModelMixin):
@@ -36,3 +36,12 @@ class ProjectDetailsView(generics.GenericAPIView, mixins.UpdateModelMixin, mixin
 
     def patch(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
+
+
+class SaveNodeAndRelationshipsView(generics.GenericAPIView):
+
+    def post(self,request):
+        serializer = SaveNodeAndRelationshipsSerializer(data=request.data,context={"request":request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response({})

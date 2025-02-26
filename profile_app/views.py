@@ -5,8 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 
 from profile_app.serializer import ProfileSerializer
 from utils import error_response, success_response
-
-
 class ProfileView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -17,3 +15,9 @@ class ProfileView(generics.GenericAPIView):
         user = request.user.profile
         serializer = ProfileSerializer(user)
         return success_response(serializer.data)
+
+
+
+
+
+
