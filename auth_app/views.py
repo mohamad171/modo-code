@@ -15,7 +15,7 @@ class Login(APIView):
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return success_response(data={"status": "ok", "token": token.key if token else created.key})
-        return error_response("Incorrect username or password", code=403)
+        return error_response("Incorrect username or password", code=400)
 
 
 class CheckLogin(APIView):
