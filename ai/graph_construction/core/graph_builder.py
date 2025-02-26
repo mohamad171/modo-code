@@ -4,10 +4,10 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional, Set, Tuple
 
-from graph_construction.languages.base_parser import BaseParser
-from graph_construction.languages.Parsers import Parsers
-from graph_construction.utils import format_nodes
-from graph_construction.utils.interfaces.GlobalGraphInfo import (
+from ai.graph_construction.languages.base_parser import BaseParser
+from ai.graph_construction.languages.Parsers import Parsers
+from ai.graph_construction.utils import format_nodes
+from ai.graph_construction.utils.interfaces.GlobalGraphInfo import (
     GlobalGraphInfo,
 )
 

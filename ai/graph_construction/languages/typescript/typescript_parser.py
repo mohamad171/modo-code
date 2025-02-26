@@ -4,8 +4,8 @@ from llama_index.packs.code_hierarchy.code_hierarchy import (
     _SignatureCaptureType,
 )
 
-from graph_construction.languages.base_parser import BaseParser
-from graph_construction.utils.interfaces.GlobalGraphInfo import (
+from ai.graph_construction.languages.base_parser import BaseParser
+from ai.graph_construction.utils.interfaces.GlobalGraphInfo import (
     GlobalGraphInfo,
 )
 

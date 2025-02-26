@@ -5,7 +5,7 @@ from typing import Any, List
 from dotenv import load_dotenv
 from neo4j import Driver, GraphDatabase, exceptions
 
-from db_managers.base_manager import BaseDBManager
+from ai.db_managers.base_manager import BaseDBManager
 
 load_dotenv()
 

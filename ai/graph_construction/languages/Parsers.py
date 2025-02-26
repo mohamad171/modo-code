@@ -1,21 +1,21 @@
 import os
 
-from graph_construction.languages.base_alias_extractor import (
+from ai.graph_construction.languages.base_alias_extractor import (
     BaseAliasExtractor,
 )
 
-from graph_construction.languages.base_parser import BaseParser
-from graph_construction.languages.javascript.javascript_parser import (
+from ai.graph_construction.languages.base_parser import BaseParser
+from ai.graph_construction.languages.javascript.javascript_parser import (
     JavascriptParser,
 )
-from graph_construction.languages.javascript.jsx_parser import JsxParser
-from graph_construction.languages.python.python_parser import PythonParser
-from graph_construction.languages.ruby.ruby_parser import RubyParser
-from graph_construction.languages.typescript.tsx_parser import TsxParser
-from graph_construction.languages.typescript.typescript_parser import (
+from ai.graph_construction.languages.javascript.jsx_parser import JsxParser
+from ai.graph_construction.languages.python.python_parser import PythonParser
+from ai.graph_construction.languages.ruby.ruby_parser import RubyParser
+from ai.graph_construction.languages.typescript.tsx_parser import TsxParser
+from ai.graph_construction.languages.typescript.typescript_parser import (
     TypescriptParser,
 )
-from graph_construction.utils.interfaces.GlobalGraphInfo import (
+from ai.graph_construction.utils.interfaces.GlobalGraphInfo import (
     GlobalGraphInfo,
 )
 

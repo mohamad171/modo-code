@@ -3,8 +3,8 @@ import os
 import tree_sitter_languages
 from tree_sitter import Language, Node, Parser
 
-from graph_construction.languages.base_parser import BaseParser
-from graph_construction.utils.interfaces.GlobalGraphInfo import (
+from ai.graph_construction.languages.base_parser import BaseParser
+from ai.graph_construction.utils.interfaces.GlobalGraphInfo import (
     GlobalGraphInfo,
 )
 

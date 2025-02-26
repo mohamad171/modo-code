@@ -13,8 +13,8 @@ from llama_index.packs.code_hierarchy import CodeHierarchyNodeParser
 from llama_index.packs.code_hierarchy.code_hierarchy import _SignatureCaptureOptions
 from tree_sitter import Language, Node, Parser
 
-from graph_construction.utils import format_nodes
-from graph_construction.utils.interfaces.GlobalGraphInfo import (
+from ai.graph_construction.utils import format_nodes
+from ai.graph_construction.utils.interfaces.GlobalGraphInfo import (
     GlobalGraphInfo,
 )
 

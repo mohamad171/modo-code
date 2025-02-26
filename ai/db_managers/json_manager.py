@@ -3,7 +3,7 @@ from typing import Any, List
 
 from dotenv import load_dotenv
 
-from db_managers.base_manager import BaseDBManager
+from ai.db_managers.base_manager import BaseDBManager
 
 load_dotenv()
 
