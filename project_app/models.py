@@ -9,6 +9,7 @@ class Project(models.Model):
     name = models.CharField(max_length=100)
     language = models.CharField(max_length=50,null=True,blank=True)
     description = models.TextField(null=True,blank=True)
+    ignores = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

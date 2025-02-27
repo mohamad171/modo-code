@@ -11,6 +11,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
+        validated_data["ignores"] = ".env,.git,.idea,__pycache__,.vscode,venv"
         return Project.objects.create(**validated_data)
 
 
