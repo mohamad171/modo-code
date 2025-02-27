@@ -7,6 +7,7 @@ class Project(models.Model):
     repository = models.URLField(null=True,blank=True)
     local_path = models.CharField(max_length=300,null=True,blank=True)
     name = models.CharField(max_length=100)
+    language = models.CharField(max_length=50,null=True,blank=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
