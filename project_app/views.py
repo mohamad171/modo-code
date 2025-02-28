@@ -41,7 +41,7 @@ class ProjectDetailsView(generics.GenericAPIView, mixins.UpdateModelMixin, mixin
 class SaveNodeAndRelationshipsView(generics.GenericAPIView):
 
     def post(self,request):
-        serializer = SaveNodeAndRelationshipsSerializer(request.data,context={"request":request})
+        serializer = SaveNodeAndRelationshipsSerializer(data=request.data,context={"request":request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response({})
