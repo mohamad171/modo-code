@@ -21,7 +21,7 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.none())
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         print(args)
         print(kwargs)
         user = kwargs["context"]["request"].user
