@@ -23,6 +23,7 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
     def __init__(self, *args, **kwargs):
         super().__init__()
         print(*args)
+        print(**kwargs)
         user = self.context["request"].user
         self.fields['project'].queryset = Project.objects.filter(user=user).only("id")
 
