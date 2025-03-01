@@ -10,8 +10,12 @@ services:
       - /$HOME/neo4j/plugins:/plugins
       - ./neo4j.conf:/config/neo4j.conf
 
-    env_file:
-      - .env
+    environment:
+      - NEO4J_AUTH=neo4j/Fax159159
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     ports:
       - "7474:7474"
     restart: always
