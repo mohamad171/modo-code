@@ -21,4 +21,6 @@ class ChromaManager:
             ids=ids
         )
 
+    def query(self, query_embededding, top_k=5):
+        return self.collection.query(query_embeddings=query_embededding, n_results=top_k)
 

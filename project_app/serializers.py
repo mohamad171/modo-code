@@ -1,9 +1,11 @@
 import json
+import os
 
 from rest_framework import serializers
 from sentence_transformers import SentenceTransformer
 
 from ai.db_managers.chroma_manager import ChromaManager
+from ai.llm_manager.openai_manager import OpenAIManager
 from ai.utils import get_nodes_for_embedding
 from project_app.models import Project
 from ai.db_managers import Neo4jManager
@@ -57,3 +59,25 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
 
         return {"status": "ok"}
 
+class AskQuestionSerializer(serializers.Serializer):
+    question = serializers.CharField()
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = kwargs["context"]["request"].user
+        self.fields['project'].queryset = Project.objects.filter(user=user).only("id")
+
+    def create(self, validated_data):
+        question = validated_data.get("question")
+        project = validated_data.get("project")
+        model = SentenceTransformer('all_minilm_l6_v2')
+        query_embedding = model.encode([question]).tolist()
+        results = ChromaManager(project.id).query(query_embedding)
+        context_data = ""
+        for doc in results['documents'][0]:
+            context_data += f"{doc}\n"
+        llm = OpenAIManager(api_key=os.getenv("OPENAI_API_KEY"), model_name="gpt-4o-mini")
+        result = llm.ask_question(context=context_data, question=question)
+
+        return result

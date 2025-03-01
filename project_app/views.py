@@ -3,7 +3,7 @@ from rest_framework import generics, mixins
 from rest_framework.permissions import IsAuthenticated
 
 from project_app.models import Project
-from project_app.serializers import ProjectSerializer,SaveNodeAndRelationshipsSerializer
+from project_app.serializers import ProjectSerializer, SaveNodeAndRelationshipsSerializer, AskQuestionSerializer
 from utils import StandardResultsSetPagination, success_response
 
 
@@ -45,3 +45,12 @@ class SaveNodeAndRelationshipsView(generics.GenericAPIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response({})
+
+
+class AskQuestionView(generics.GenericAPIView):
+
+    def post(self,request):
+        serializer = AskQuestionSerializer(data=request.data,context={"request":request})
+        if serializer.is_valid(raise_exception=True):
+            result = serializer.save()
+            return success_response({"ai":result})
