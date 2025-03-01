@@ -2,9 +2,10 @@ from openai import OpenAI
 import os
 
 class OpenAIManager:
-    def __init__(self, api_key,model_name="gpt-4o-mini",base_url=None):
+    def __init__(self, api_key,model_name="gpt-4o-mini",base_url=None,embededdding_model="text-embedding-3-small"):
         self.api_key = api_key
         self.client = OpenAI(api_key=api_key)
+        self.embededding_model = embededdding_model
         if base_url:
             self.client = OpenAI(api_key=api_key,base_url=base_url)
 
@@ -44,6 +45,6 @@ class OpenAIManager:
     def embededding(self,text):
         response = self.client.embeddings.create(
                 input=text,
-                model="text-embedding-3-small"
+                model= self.embededding_model
             )
         return response.data[0].embedding["data"][0]["embedding"]
