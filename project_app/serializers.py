@@ -29,9 +29,10 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         nodes = validated_data.get("nodes")
         relationships = validated_data.get("relationships")
         project = validated_data.get("project")
+        print(nodes,relationships)
 
         print(len(nodes),len(relationships))
-        print(type(len),type(relationships))
+        print(type(nodes),type(relationships))
         neo_db = Neo4jManager(repoId=project.id,entityId=project.id)
         neo_db.save_graph(nodes, relationships)
         neo_db.close()
