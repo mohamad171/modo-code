@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import serializers
 from project_app.models import Project
 from ai.db_managers import Neo4jManager
@@ -16,8 +18,8 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
-    nodes = serializers.ListField()
-    relationships = serializers.ListField()
+    nodes = serializers.CharField()
+    relationships = serializers.CharField()
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.none())
 
     def __init__(self, *args, **kwargs):
@@ -28,6 +30,9 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
     def create(self, validated_data):
         nodes = validated_data.get("nodes")
         relationships = validated_data.get("relationships")
+
+        nodes = json.loads(nodes)
+        relationships = json.loads(relationships)
         project = validated_data.get("project")
         print(nodes,relationships)
 
