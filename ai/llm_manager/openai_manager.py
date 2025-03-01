@@ -40,3 +40,10 @@ class OpenAIManager:
                 stream=False
             )
         return response.choices[0].message.content
+
+    def embededding(self,text):
+        response = self.client.embeddings.create(
+                input=text,
+                model="text-embedding-3-small"
+            )
+        return response.data[0].embedding["data"][0]["embedding"]

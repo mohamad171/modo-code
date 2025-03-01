@@ -49,8 +49,9 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         text_data = []
         for i in result:
             text_data.append(i["text"])
-        model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-        embeddings = model.encode(text_data)
+
+        embeddings = OpenAIManager(api_key=os.getenv("OPENAI_API_KEY"), model_name="gpt-4o-mini").embededding(text_data)
+
         ids = [item["node_id"] for item in result]
         chroma = ChromaManager(project.id)
         chroma.save_graph(text_data,embeddings,ids)
@@ -71,8 +72,8 @@ class AskQuestionSerializer(serializers.Serializer):
     def create(self, validated_data):
         question = validated_data.get("question")
         project = validated_data.get("project")
-        model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-        query_embedding = model.encode([question]).tolist()
+        openai_manager = OpenAIManager(api_key=os.getenv("OPENAI_API_KEY"), model_name="gpt-4o-mini")
+        query_embedding = openai_manager.embededding(question)
         results = ChromaManager(project.id).query(query_embedding)
         context_data = ""
         for doc in results['documents'][0]:
