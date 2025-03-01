@@ -44,7 +44,7 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         neo_db.save_graph(nodes, relationships)
         neo_db.close()
 
-
+        #TODO this task should run on celery | add status to project model
         result = get_nodes_for_embedding(neo_db)
         text_data = []
         for i in result:
