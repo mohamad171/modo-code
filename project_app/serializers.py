@@ -71,7 +71,7 @@ class AskQuestionSerializer(serializers.Serializer):
     def create(self, validated_data):
         question = validated_data.get("question")
         project = validated_data.get("project")
-        model = SentenceTransformer('all_minilm_l6_v2')
+        model = SentenceTransformer('all-minilm-l6-v2')
         query_embedding = model.encode([question]).tolist()
         results = ChromaManager(project.id).query(query_embedding)
         context_data = ""
