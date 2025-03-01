@@ -4,9 +4,9 @@ import os
 class OpenAIManager:
     def __init__(self, api_key,model_name="gpt-4o-mini",base_url=None):
         self.api_key = api_key
-        self.client = OpenAI(api_key)
+        self.client = OpenAI(api_key=api_key)
         if base_url:
-            self.client = OpenAI(api_key,base_url=base_url)
+            self.client = OpenAI(api_key=api_key,base_url=base_url)
 
         self.model_name = model_name
 
