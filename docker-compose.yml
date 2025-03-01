@@ -18,6 +18,7 @@ services:
       - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     ports:
       - "7474:7474"
+      - "7687:7687"
     restart: always
   vector_db:
       image: chromadb/chroma:0.6.3
