@@ -1,6 +1,10 @@
 import json
 
 from rest_framework import serializers
+from sentence_transformers import SentenceTransformer
+
+from ai.db_managers.chroma_manager import ChromaManager
+from ai.utils import get_nodes_for_embedding
 from project_app.models import Project
 from ai.db_managers import Neo4jManager
 
@@ -34,12 +38,22 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         nodes = json.loads(nodes)
         relationships = json.loads(relationships)
         project = validated_data.get("project")
-        print(nodes,relationships)
-
-        print(len(nodes),len(relationships))
-        print(type(nodes),type(relationships))
         neo_db = Neo4jManager(repoId=project.id,entityId=project.id)
         neo_db.save_graph(nodes, relationships)
         neo_db.close()
+
+
+        result = get_nodes_for_embedding(neo_db)
+        text_data = []
+        for i in result:
+            text_data.append(i["text"])
+        model = SentenceTransformer('all_minilm_l6_v2')
+        embeddings = model.encode(text_data)
+        ids = [item["node_id"] for item in result]
+        chroma = ChromaManager(project.id)
+        chroma.save_graph(text_data,embeddings,ids)
+
+
+
         return {"status": "ok"}
 
