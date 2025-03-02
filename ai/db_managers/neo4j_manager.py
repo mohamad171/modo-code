@@ -105,14 +105,13 @@ class Neo4jManager(BaseDBManager):
         for i in range(0, len(nodeList), batch_size):
             batch = nodeList[i:i + batch_size]
             for node in batch:
-                # Use 'file_node_id' as the primary identifier if it exists
                 query = """
-                MERGE (n:Node {file_node_id: $file_node_id})
+                MERGE (n:Node {node_id: node_id})
                 ON CREATE SET n += $properties, n.repoId = $repoId, n.entityId = $entityId
                 ON MATCH SET n += $properties
                 """
                 tx.run(query,
-                       file_node_id=node["file_node_id"],  # Use 'file_node_id' for matching
+                       node_id=node["attributes"]["node_id"],
                        properties=node,
                        repoId=repoId,
                        entityId=entityId)
@@ -122,18 +121,17 @@ class Neo4jManager(BaseDBManager):
         for i in range(0, len(edgesList), batch_size):
             batch = edgesList[i:i + batch_size]
             for edge in batch:
-                # Use `file_node_id` instead of `id` for matching nodes
                 query = """
-                MATCH (a:Node {file_node_id: $source_file_node_id})
-                MATCH (b:Node {file_node_id: $target_file_node_id})
+                MATCH (a:Node {node_id: $source_node_id})
+                MATCH (b:Node {node_id: $target_node_id})
                 MERGE (a)-[r:RELATIONSHIP_TYPE {type: $type}]->(b)
                 ON CREATE SET r += $properties
                 ON MATCH SET r += $properties
                 """
                 tx.run(
                     query,
-                    source_file_node_id=edge["source_file_node_id"],  # Match source node
-                    target_file_node_id=edge["target_file_node_id"],  # Match target node
+                    source_node_id=edge["sourceId"],  # Match source node
+                    target_node_id=edge["targetId"],  # Match target node
                     type=edge["type"],  # Relationship type
                     properties=edge,  # Relationship properties
                     entityId=entityId  # Additional context
