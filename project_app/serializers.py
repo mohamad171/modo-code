@@ -47,15 +47,31 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         #TODO this task should run on celery | add status to project model
         result = get_nodes_for_embedding(neo_db)
         text_data = []
+        chunk_size = 100
+        chunked_embeddings = []
         for i in result:
             text_data.append(i["text"])
 
-        embeddings = OpenAIManager(api_key=os.getenv("OPENAI_API_KEY"), embededdding_model="text-embedding-3-large").embededding(text_data)
+        for j in range(0, len(text_data), chunk_size):
+            chunk = text_data[j:j + chunk_size]
+
+            embeddings = OpenAIManager(
+                api_key=os.getenv("OPENAI_API_KEY"),
+                embededdding_model="text-embedding-3-small"
+            ).embededding(chunk)
+
+            chunked_embeddings.extend(embeddings)
+            print(j)
 
         ids = [item["node_id"] for item in result]
         chroma = ChromaManager(project.id)
-        chroma.save_graph(text_data,embeddings,ids)
 
+        for j in range(0, len(text_data), chunk_size):
+            chunk_text = text_data[j:j + chunk_size]
+            chunk_ids = ids[j:j + chunk_size]
+            chunk_embeddings = chunked_embeddings[j:j + chunk_size]
+
+            chroma.save_graph(chunk_text, chunk_embeddings, chunk_ids)
 
 
         return {"status": "ok"}
