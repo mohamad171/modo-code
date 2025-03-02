@@ -47,7 +47,7 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         #TODO this task should run on celery | add status to project model
         result = get_nodes_for_embedding(neo_db)
         text_data = []
-        chunk_size = 100
+        chunk_size = 200
         chunked_embeddings = []
         for i in result:
             text_data.append(i["text"])
@@ -57,7 +57,7 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
 
             embeddings = OpenAIManager(
                 api_key=os.getenv("OPENAI_API_KEY"),
-                embededdding_model="text-embedding-3-small"
+                embededdding_model="text-embedding-3-large"
             ).embededding(chunk)
 
             chunked_embeddings.extend(embeddings)
