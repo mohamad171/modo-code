@@ -91,51 +91,64 @@ class Neo4jManager(BaseDBManager):
         # Function to create nodes in the Neo4j database
         with self.driver.session() as session:
             session.execute_write(
-                self._create_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
+                self._create_or_update_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
             )
 
     def create_edges(self, edgesList: List[Any]):
         # Function to create edges between nodes in the Neo4j database
         with self.driver.session() as session:
-            session.execute_write(self._create_edges_txn, edgesList, 3000, entityId=self.entityId)
+            session.execute_write(self._create_or_update_edges_txn, edgesList, 3000, entityId=self.entityId)
 
     @staticmethod
-    def _create_or_update_nodes_txn(tx, nodeList, batch_size, repoId, entityId):
-        # Break the nodes into smaller batches for processing
-        for i in range(0, len(nodeList), batch_size):
-            batch = nodeList[i:i + batch_size]
-            for node in batch:
-                query = """
-                MERGE (n:Node {node_id: $node_id})
-                ON CREATE SET n += $properties, n.repoId = $repoId, n.entityId = $entityId
-                ON MATCH SET n += $properties
-                """
-                tx.run(query,
-                       node_id=node["attributes"]["node_id"],
-                       properties=node,
-                       repoId=repoId,
-                       entityId=entityId)
+    def _create_or_update_nodes_txn(tx, nodeList: List[Any], batch_size: int, repoId: str, entityId: str):
+        node_creation_query = """
+        CALL apoc.periodic.iterate(
+            "UNWIND $nodeList AS node RETURN node",
+            "CALL apoc.create.node([node.type, 'NODE'], apoc.map.merge(node.attributes, {repoId: $repoId, entityId: $entityId})) YIELD node as n
+            WITH n, node
+            MERGE (n)-[:RELATIONSHIP_TYPE {type: node.relationship.type}]->(:Node {node_id: node.relationship.target_id})
+            ON CREATE SET n += node.relationship.properties
+            ON MATCH SET n += node.relationship.properties
+            RETURN count(n) as count",
+            {
+                batchSize: $batchSize,
+                parallel: false,
+                iterateList: true,
+                params: {nodeList: $nodeList, repoId: $repoId, entityId: $entityId}
+            }
+        ) YIELD batches, total, errorMessages, updateStatistics
+        RETURN batches, total, errorMessages, updateStatistics
+        """
+
+        result = tx.run(node_creation_query, nodeList=nodeList, batchSize=batch_size, repoId=repoId, entityId=entityId)
+
+        # Fetch and print the result
+        for record in result:
+            print(f"Created {record['total']} nodes")
 
     @staticmethod
-    def _create_or_update_edges_txn(tx, edgesList, batch_size, entityId):
-        for i in range(0, len(edgesList), batch_size):
-            batch = edgesList[i:i + batch_size]
-            for edge in batch:
-                query = """
-                MATCH (a:Node {node_id: $source_node_id})
-                MATCH (b:Node {node_id: $target_node_id})
-                MERGE (a)-[r:RELATIONSHIP_TYPE {type: $type}]->(b)
-                ON CREATE SET r += $properties
-                ON MATCH SET r += $properties
-                """
-                tx.run(
-                    query,
-                    source_node_id=edge["sourceId"],  # Match source node
-                    target_node_id=edge["targetId"],  # Match target node
-                    type=edge["type"],  # Relationship type
-                    properties=edge,  # Relationship properties
-                    entityId=entityId  # Additional context
-                )
+    def _create_or_update_edges_txn(tx, edgesList: List[Any], batch_size: int, entityId: str):
+        # Cypher query using apoc.periodic.iterate for creating edges
+        edge_creation_query = """
+        CALL apoc.periodic.iterate(
+            'WITH $edgesList AS edges UNWIND edges AS edgeObject RETURN edgeObject',
+            'MATCH (node1:NODE {node_id: edgeObject.sourceId, entityId: $entityId}) 
+             MATCH (node2:NODE {node_id: edgeObject.targetId, entityId: $entityId}) 
+             MERGE (node1)-[r:RELATIONSHIP_TYPE {type: edgeObject.type}]->(node2)
+             ON CREATE SET r += edgeObject.properties
+             ON MATCH SET r += edgeObject.properties
+             RETURN count(r) as count',
+            {batchSize:$batchSize, parallel:false, iterateList: true, params:{edgesList: $edgesList, entityId: $entityId}}
+        )
+        YIELD batches, total, errorMessages, updateStatistics
+        RETURN batches, total, errorMessages, updateStatistics
+        """
+        # Execute the query
+        result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
+
+        # Fetch the result
+        for record in result:
+            print(f"Created {record['total']} edges")
 
     def format_query(self, query: str):
         # Function to format the query to be used in the fulltext index
