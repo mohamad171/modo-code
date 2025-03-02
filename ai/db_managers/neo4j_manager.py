@@ -91,13 +91,13 @@ class Neo4jManager(BaseDBManager):
         # Function to create nodes in the Neo4j database
         with self.driver.session() as session:
             session.execute_write(
-                self._create_or_update_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
+                self._create_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
             )
 
     def create_edges(self, edgesList: List[Any]):
         # Function to create edges between nodes in the Neo4j database
         with self.driver.session() as session:
-            session.execute_write(self._create_or_update_edges_txn, edgesList, 3000, entityId=self.entityId)
+            session.execute_write(self._create_edges_txn, edgesList, 3000, entityId=self.entityId)
 
     @staticmethod
     def _create_or_update_nodes_txn(tx, nodeList, batch_size, repoId, entityId):
