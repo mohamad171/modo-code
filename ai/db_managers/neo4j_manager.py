@@ -107,7 +107,7 @@ class Neo4jManager(BaseDBManager):
             for node in batch:
                 # Use the MERGE command to create or update the node
                 query = """
-                MERGE (n:Node {id: $id})
+                MERGE (n:Node {file_node_id: $file_node_id})
                 ON CREATE SET n += $properties, n.repoId = $repoId, n.entityId = $entityId
                 ON MATCH SET n += $properties
                 """
@@ -118,16 +118,23 @@ class Neo4jManager(BaseDBManager):
         for i in range(0, len(edgesList), batch_size):
             batch = edgesList[i:i + batch_size]
             for edge in batch:
-                # Use MERGE for relationships as well
+                # Use `file_node_id` instead of `id` for matching nodes
                 query = """
-                MATCH (a:Node {id: $source_id})
-                MATCH (b:Node {id: $target_id})
+                MATCH (a:Node {file_node_id: $source_file_node_id})
+                MATCH (b:Node {file_node_id: $target_file_node_id})
                 MERGE (a)-[r:RELATIONSHIP_TYPE {type: $type}]->(b)
                 ON CREATE SET r += $properties
                 ON MATCH SET r += $properties
                 """
-                tx.run(query, source_id=edge["source"], target_id=edge["target"],
-                       type=edge["type"], properties=edge, entityId=entityId)
+                tx.run(
+                    query,
+                    source_file_node_id=edge["source_file_node_id"],  # Match source node
+                    target_file_node_id=edge["target_file_node_id"],  # Match target node
+                    type=edge["type"],  # Relationship type
+                    properties=edge,  # Relationship properties
+                    entityId=entityId  # Additional context
+                )
+
     def format_query(self, query: str):
         # Function to format the query to be used in the fulltext index
         special_characters = [
