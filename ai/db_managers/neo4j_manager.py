@@ -106,7 +106,7 @@ class Neo4jManager(BaseDBManager):
             batch = nodeList[i:i + batch_size]
             for node in batch:
                 query = """
-                MERGE (n:Node {node_id: node_id})
+                MERGE (n:Node {node_id: $node_id})
                 ON CREATE SET n += $properties, n.repoId = $repoId, n.entityId = $entityId
                 ON MATCH SET n += $properties
                 """
