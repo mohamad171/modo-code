@@ -105,13 +105,17 @@ class Neo4jManager(BaseDBManager):
         for i in range(0, len(nodeList), batch_size):
             batch = nodeList[i:i + batch_size]
             for node in batch:
-                # Use the MERGE command to create or update the node
+                # Use 'file_node_id' as the primary identifier if it exists
                 query = """
                 MERGE (n:Node {file_node_id: $file_node_id})
                 ON CREATE SET n += $properties, n.repoId = $repoId, n.entityId = $entityId
                 ON MATCH SET n += $properties
                 """
-                tx.run(query, id=node["id"], properties=node, repoId=repoId, entityId=entityId)
+                tx.run(query,
+                       file_node_id=node["file_node_id"],  # Use 'file_node_id' for matching
+                       properties=node,
+                       repoId=repoId,
+                       entityId=entityId)
 
     @staticmethod
     def _create_or_update_edges_txn(tx, edgesList, batch_size, entityId):
