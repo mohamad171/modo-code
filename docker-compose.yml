@@ -19,6 +19,14 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 500M
     restart: always
   vector_db:
       image: chromadb/chroma:0.6.3
