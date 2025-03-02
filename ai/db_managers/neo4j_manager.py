@@ -91,14 +91,43 @@ class Neo4jManager(BaseDBManager):
         # Function to create nodes in the Neo4j database
         with self.driver.session() as session:
             session.execute_write(
-                self._create_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
+                self._create_or_update_nodes_txn, nodeList, 3000, repoId=self.repoId, entityId=self.entityId
             )
 
     def create_edges(self, edgesList: List[Any]):
         # Function to create edges between nodes in the Neo4j database
         with self.driver.session() as session:
-            session.execute_write(self._create_edges_txn, edgesList, 3000, entityId=self.entityId)
+            session.execute_write(self._create_or_update_edges_txn, edgesList, 3000, entityId=self.entityId)
 
+    @staticmethod
+    def _create_or_update_nodes_txn(tx, nodeList, batch_size, repoId, entityId):
+        # Break the nodes into smaller batches for processing
+        for i in range(0, len(nodeList), batch_size):
+            batch = nodeList[i:i + batch_size]
+            for node in batch:
+                # Use the MERGE command to create or update the node
+                query = """
+                MERGE (n:Node {id: $id})
+                ON CREATE SET n += $properties, n.repoId = $repoId, n.entityId = $entityId
+                ON MATCH SET n += $properties
+                """
+                tx.run(query, id=node["id"], properties=node, repoId=repoId, entityId=entityId)
+
+    @staticmethod
+    def _create_or_update_edges_txn(tx, edgesList, batch_size, entityId):
+        for i in range(0, len(edgesList), batch_size):
+            batch = edgesList[i:i + batch_size]
+            for edge in batch:
+                # Use MERGE for relationships as well
+                query = """
+                MATCH (a:Node {id: $source_id})
+                MATCH (b:Node {id: $target_id})
+                MERGE (a)-[r:RELATIONSHIP_TYPE {type: $type}]->(b)
+                ON CREATE SET r += $properties
+                ON MATCH SET r += $properties
+                """
+                tx.run(query, source_id=edge["source"], target_id=edge["target"],
+                       type=edge["type"], properties=edge, entityId=entityId)
     def format_query(self, query: str):
         # Function to format the query to be used in the fulltext index
         special_characters = [
