@@ -121,7 +121,6 @@ class Neo4jManager(BaseDBManager):
         """
 
         result = tx.run(node_creation_query, nodeList=nodeList, batchSize=batch_size, repoId=repoId, entityId=entityId)
-        tx.commit()  # Commit the transaction
 
         # Fetch and print the result
         for record in result:
@@ -148,7 +147,6 @@ class Neo4jManager(BaseDBManager):
         """
         # Execute the query
         result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
-        tx.commit()  # Commit the transaction
 
         # Fetch the result
         for record in result:
