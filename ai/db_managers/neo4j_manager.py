@@ -121,10 +121,13 @@ class Neo4jManager(BaseDBManager):
         """
 
         result = tx.run(node_creation_query, nodeList=nodeList, batchSize=batch_size, repoId=repoId, entityId=entityId)
+        tx.commit()  # Commit the transaction
 
         # Fetch and print the result
         for record in result:
             print(f"Created {record['total']} nodes")
+            print(f"Error Messages: {record['errorMessages']}")
+            print(f"Update Statistics: {record['updateStatistics']}")
 
     @staticmethod
     def _create_or_update_edges_txn(tx, edgesList: List[Any], batch_size: int, entityId: str):
@@ -145,10 +148,13 @@ class Neo4jManager(BaseDBManager):
         """
         # Execute the query
         result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
+        tx.commit()  # Commit the transaction
 
         # Fetch the result
         for record in result:
             print(f"Created {record['total']} edges")
+            print(f"Error Messages: {record['errorMessages']}")
+            print(f"Update Statistics: {record['updateStatistics']}")
 
     def format_query(self, query: str):
         # Function to format the query to be used in the fulltext index
