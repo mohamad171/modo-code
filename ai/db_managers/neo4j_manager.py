@@ -101,9 +101,12 @@ class Neo4jManager(BaseDBManager):
 
     @staticmethod
     def _create_or_update_nodes_txn(tx, nodeList: List[Any], batch_size: int, repoId: str, entityId: str):
+        # Filter out nodes with null node_id
+        filtered_node_list = [node for node in nodeList if node.get('attributes', {}).get('node_id')]
+
         node_creation_query = """
         CALL apoc.periodic.iterate(
-            "UNWIND $nodeList AS node RETURN node",
+            "UNWIND $filtered_node_list AS node RETURN node",
             "CALL apoc.create.node([node.type, 'NODE'], apoc.map.merge(node.attributes, {repoId: $repoId, entityId: $entityId})) YIELD node as n
             WITH n, node
             MERGE (n)-[:RELATIONSHIP_TYPE {type: node.relationship.type}]->(:Node {node_id: node.relationship.target_id})
@@ -114,13 +117,14 @@ class Neo4jManager(BaseDBManager):
                 batchSize: $batchSize,
                 parallel: false,
                 iterateList: true,
-                params: {nodeList: $nodeList, repoId: $repoId, entityId: $entityId}
+                params: {filtered_node_list: $filtered_node_list, repoId: $repoId, entityId: $entityId}
             }
         ) YIELD batches, total, errorMessages, updateStatistics
         RETURN batches, total, errorMessages, updateStatistics
         """
 
-        result = tx.run(node_creation_query, nodeList=nodeList, batchSize=batch_size, repoId=repoId, entityId=entityId)
+        result = tx.run(node_creation_query, filtered_node_list=filtered_node_list, batchSize=batch_size, repoId=repoId,
+                        entityId=entityId)
 
         # Fetch and print the result
         for record in result:
@@ -130,23 +134,26 @@ class Neo4jManager(BaseDBManager):
 
     @staticmethod
     def _create_or_update_edges_txn(tx, edgesList: List[Any], batch_size: int, entityId: str):
-        # Cypher query using apoc.periodic.iterate for creating edges
+        # Filter out edges with null node_id
+        filtered_edges_list = [edge for edge in edgesList if edge.get('sourceId') and edge.get('targetId')]
+
         edge_creation_query = """
         CALL apoc.periodic.iterate(
-            'WITH $edgesList AS edges UNWIND edges AS edgeObject RETURN edgeObject',
+            'WITH $filtered_edges_list AS edges UNWIND edges AS edgeObject RETURN edgeObject',
             'MATCH (node1:NODE {node_id: edgeObject.sourceId, entityId: $entityId}) 
              MATCH (node2:NODE {node_id: edgeObject.targetId, entityId: $entityId}) 
              MERGE (node1)-[r:RELATIONSHIP_TYPE {type: edgeObject.type}]->(node2)
              ON CREATE SET r += edgeObject.properties
              ON MATCH SET r += edgeObject.properties
              RETURN count(r) as count',
-            {batchSize:$batchSize, parallel:false, iterateList: true, params:{edgesList: $edgesList, entityId: $entityId}}
+            {batchSize:$batchSize, parallel:false, iterateList: true, params:{filtered_edges_list: $filtered_edges_list, entityId: $entityId}}
         )
         YIELD batches, total, errorMessages, updateStatistics
         RETURN batches, total, errorMessages, updateStatistics
         """
         # Execute the query
-        result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
+        result = tx.run(edge_creation_query, filtered_edges_list=filtered_edges_list, batchSize=batch_size,
+                        entityId=entityId)
 
         # Fetch the result
         for record in result:
