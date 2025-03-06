@@ -6,6 +6,7 @@ from sentence_transformers import SentenceTransformer
 
 from ai.db_managers.chroma_manager import ChromaManager
 from ai.llm_manager.openai_manager import OpenAIManager
+from ai.llm_manager.langchain_manager import Embedding
 from ai.utils import get_nodes_for_embedding
 from project_app.models import Project
 from ai.db_managers import Neo4jManager
@@ -40,11 +41,11 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         nodes = json.loads(nodes)
         relationships = json.loads(relationships)
         project = validated_data.get("project")
-        neo_db = Neo4jManager(repoId=project.id,entityId=project.id)
+        neo_db = Neo4jManager(repoId=project.id, entityId=project.id)
         neo_db.save_graph(nodes, relationships)
         neo_db.close()
 
-        #TODO this task should run on celery | add status to project model
+        # TODO this task should run on celery | add status to project model
         result = get_nodes_for_embedding(neo_db)
         text_data = []
         chunk_size = 10
@@ -55,13 +56,10 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         for j in range(0, len(text_data), chunk_size):
             chunk = text_data[j:j + chunk_size]
 
-            embeddings = OpenAIManager(
-                api_key=os.getenv("OPENAI_API_KEY"),
-                embededdding_model="text-embedding-3-large"
-            ).embededding(chunk)
+            embeddings = Embedding(account_id=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
+                                   api_token=os.getenv("CLOUDFLARE_API_TOKEN")).embedded(chunk)
 
             chunked_embeddings.extend(embeddings)
-            print(j)
 
         ids = [item["node_id"] for item in result]
         chroma = ChromaManager(project.id)
@@ -73,8 +71,8 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
 
             chroma.save_graph(chunk_text, chunk_embeddings, chunk_ids)
 
-
         return {"status": "ok"}
+
 
 class AskQuestionSerializer(serializers.Serializer):
     question = serializers.CharField()
@@ -88,8 +86,8 @@ class AskQuestionSerializer(serializers.Serializer):
     def create(self, validated_data):
         question = validated_data.get("question")
         project = validated_data.get("project")
-        openai_manager = OpenAIManager(api_key=os.getenv("OPENAI_API_KEY"))
-        query_embedding = openai_manager.embededding(question)
+        query_embedding = Embedding(account_id=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
+                                    api_token=os.getenv("CLOUDFLARE_API_TOKEN")).embedded(question)
         results = ChromaManager(project.id).query(query_embedding)
         context_data = ""
         for doc in results['documents'][0]:
