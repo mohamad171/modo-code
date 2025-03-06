@@ -102,6 +102,7 @@ class Neo4jManager(BaseDBManager):
     @staticmethod
     def _create_or_update_nodes_txn(tx, nodeList: List[Any], batch_size: int, repoId: str, entityId: str):
         # Filter out nodes with null node_id
+        print(nodeList)
         filtered_node_list = [node for node in nodeList if node.get('attributes', {}).get('node_id')]
 
         node_creation_query = """
