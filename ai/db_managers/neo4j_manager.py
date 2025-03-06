@@ -393,12 +393,19 @@ class Neo4jManager(BaseDBManager):
 
     @staticmethod
     def _create_edges_txn(tx, edgesList: List[Any], batch_size: int, entityId: str):
-        # Cypher query using apoc.periodic.iterate for creating edges
+        # Cypher query using apoc.periodic.iterate for creating edges only if they do not exist
         edge_creation_query = """
         CALL apoc.periodic.iterate(
             'WITH $edgesList AS edges UNWIND edges AS edgeObject RETURN edgeObject',
-            'MATCH (node1:NODE {node_id: edgeObject.sourceId, entityId: $entityId}) MATCH (node2:NODE {node_id: edgeObject.targetId, entityId: $entityId}) CALL apoc.create.relationship(node1, edgeObject.type, {}, node2) YIELD rel RETURN rel',
-            {batchSize:$batchSize, parallel:false, iterateList: true, params:{edgesList: $edgesList, entityId: $entityId}}
+            'MATCH (node1:NODE {node_id: edgeObject.sourceId, entityId: $entityId})
+             MATCH (node2:NODE {node_id: edgeObject.targetId, entityId: $entityId})
+             OPTIONAL MATCH (node1)-[existingRel]->(node2)
+             WHERE type(existingRel) = edgeObject.type
+             WITH node1, node2, edgeObject, existingRel
+             WHERE existingRel IS NULL
+             CALL apoc.create.relationship(node1, edgeObject.type, {}, node2) YIELD rel
+             RETURN rel',
+            {batchSize:$batchSize, parallel:false, iterateList:true, params:{edgesList:$edgesList, entityId:$entityId}}
         )
         YIELD batches, total, errorMessages, updateStatistics
         RETURN batches, total, errorMessages, updateStatistics
@@ -406,6 +413,7 @@ class Neo4jManager(BaseDBManager):
         # Execute the query
         result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
 
-        # Fetch the result
+        # Fetch the result and print the total edges created in each batch
         for record in result:
             print(f"Created {record['total']} edges")
+
