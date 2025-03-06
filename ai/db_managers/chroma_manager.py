@@ -14,11 +14,22 @@ class ChromaManager:
         self.db = chromadb.HttpClient(host='vector_db')
         self.collection = self.get_or_create_collection(project_id)
 
-    def save_graph(self, text_data, embeddings,ids):
-        self.collection.add(
-            documents=text_data,
-            embeddings=embeddings,
-            ids=ids
+    def save_graph(self, text_data, embeddings, ids):
+        # Build a dictionary where each id maps to its latest document and embedding.
+        combined = {}
+        for doc, emb, _id in zip(text_data, embeddings, ids):
+            # If the id already exists, update the entry; otherwise, create it.
+            combined[_id] = (doc, emb)
+
+        # Unpack the unique values.
+        unique_ids = list(combined.keys())
+        unique_texts, unique_embeddings = zip(*combined.values())
+
+        # Use upsert if available. This will update existing entries and add new ones.
+        self.collection.upsert(
+            documents=list(unique_texts),
+            embeddings=list(unique_embeddings),
+            ids=unique_ids
         )
 
     def query(self, query_embededding, top_k=5):
