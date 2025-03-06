@@ -53,12 +53,12 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
         for i in result:
             text_data.append(i["text"])
 
+        # Process texts in chunks
         for j in range(0, len(text_data), chunk_size):
             chunk = text_data[j:j + chunk_size]
-
+            # Pass the entire chunk to get embeddings for all texts in the chunk
             embeddings = Embedding(account_id=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
-                                   api_token=os.getenv("CLOUDFLARE_API_TOKEN")).embedded(chunk[0])
-
+                                   api_token=os.getenv("CLOUDFLARE_API_TOKEN")).embedded(chunk)
             chunked_embeddings.extend(embeddings)
 
         ids = [item["node_id"] for item in result]
