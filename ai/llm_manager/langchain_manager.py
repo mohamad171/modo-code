@@ -55,5 +55,4 @@ class Embedding(EmbeddingManager):
         super().__init__(account_id, api_token, model)
 
     def embedded(self, query_text):
-        print(query_text)
         return self.embeddings.embed_query(query_text)
