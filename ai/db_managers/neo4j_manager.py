@@ -412,6 +412,8 @@ class Neo4jManager(BaseDBManager):
         YIELD batches, total, errorMessages, updateStatistics
         RETURN batches, total, errorMessages, updateStatistics
         """
+
+        print(edgesList)
         # Execute the query
         result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
 
