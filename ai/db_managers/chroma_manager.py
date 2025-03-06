@@ -17,7 +17,7 @@ class ChromaManager:
     def save_graph(self, text_data, embeddings,ids):
         self.collection.add(
             documents=text_data,
-            embeddings=embeddings.tolist(),
+            embeddings=embeddings,
             ids=ids
         )
 
