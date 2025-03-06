@@ -393,34 +393,19 @@ class Neo4jManager(BaseDBManager):
 
     @staticmethod
     def _create_edges_txn(tx, edgesList: List[Any], batch_size: int, entityId: str):
-        # Updated Cypher query using apoc.periodic.iterate for creating edges
+        # Cypher query using apoc.periodic.iterate for creating edges
         edge_creation_query = """
         CALL apoc.periodic.iterate(
             'WITH $edgesList AS edges UNWIND edges AS edgeObject RETURN edgeObject',
-            'MATCH (node1:NODE {node_id: edgeObject.sourceId, entityId: $entityId})
-             MATCH (node2:NODE {node_id: edgeObject.targetId, entityId: $entityId})
-             MERGE (node1)-[rel:`CALLS`]->(node2)  // Dynamically setting the relationship type
-             ON CREATE SET rel += edgeObject.properties
-             ON MATCH SET rel += edgeObject.properties',
-            {
-                batchSize: $batchSize,
-                parallel: false,
-                iterateList: true,
-                params: {edgesList: $edgesList, entityId: $entityId}
-            }
+            'MATCH (node1:NODE {node_id: edgeObject.sourceId, entityId: $entityId}) MATCH (node2:NODE {node_id: edgeObject.targetId, entityId: $entityId}) CALL apoc.create.relationship(node1, edgeObject.type, {}, node2) YIELD rel RETURN rel',
+            {batchSize:$batchSize, parallel:false, iterateList: true, params:{edgesList: $edgesList, entityId: $entityId}}
         )
         YIELD batches, total, errorMessages, updateStatistics
         RETURN batches, total, errorMessages, updateStatistics
         """
-
-        # Debugging - Print edgesList to verify data before execution
-        print(f"Edges List: {edgesList}")
-
         # Execute the query
         result = tx.run(edge_creation_query, edgesList=edgesList, batchSize=batch_size, entityId=entityId)
 
-        # Fetch and display the result
+        # Fetch the result
         for record in result:
-            print(f"Created or updated {record['total']} edges")
-
-
+            print(f"Created {record['total']} edges")
