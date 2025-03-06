@@ -57,7 +57,7 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
             chunk = text_data[j:j + chunk_size]
 
             embeddings = Embedding(account_id=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
-                                   api_token=os.getenv("CLOUDFLARE_API_TOKEN")).embedded(chunk)
+                                   api_token=os.getenv("CLOUDFLARE_API_TOKEN")).embedded(chunk[0])
 
             chunked_embeddings.extend(embeddings)
 
