@@ -102,15 +102,13 @@ class Neo4jManager(BaseDBManager):
     @staticmethod
     def _create_or_update_nodes_txn(tx, nodeList: List[Any], batch_size: int, repoId: str, entityId: str):
         # Filter out nodes with null node_id
-        filtered_node_list = [
-            node for node in nodeList
-            if node.get('attributes', {}).get('node_id') and
-               node.get('relationship', {}).get('target_id') and
-               isinstance(node['attributes']['node_id'], str) and
-               isinstance(node['relationship']['target_id'], str)
-        ]
-        print(filtered_node_list)
+        filtered_node_list = []
+        for node in nodeList:
+            print(node.get("attributes", {}).get("node_id"))
+            if node.get("attributes", {}).get("node_id"):
+                filtered_node_list.append(node)
 
+        print(filtered_node_list)
 
         node_creation_query = """
         CALL apoc.periodic.iterate(
