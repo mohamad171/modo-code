@@ -78,6 +78,10 @@ services:
     depends_on:
       - graph_db
       - vector_db
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=ostore
+      - POSTGRES_PASSWORD=ostore171
 
   celery_beat:
     build:
