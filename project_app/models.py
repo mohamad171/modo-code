@@ -29,7 +29,7 @@ class Task(models.Model):
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     task_type = models.IntegerField(choices=TaskTypeChoices.choices, default=TaskTypeChoices.BUILD_GRAPH)
-    task_status = models.IntegerField(choices=TaskStatusChoices.choices, default=TaskStatusChoices.choices)
+    task_status = models.IntegerField(choices=TaskStatusChoices.choices, default=TaskStatusChoices.WAITING)
     error_text = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
