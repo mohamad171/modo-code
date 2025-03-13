@@ -13,6 +13,7 @@ import time
 def run_task(self,**kwargs):
     task_type = kwargs["task_type"]
     project_id = kwargs["project_id"]
+    print(kwargs)
     project = Project.objects.filter(id=project_id).first()
     task = Task.objects.create(task_type=task_type,project=project)
     if task_type == Task.TaskTypeChoices.BUILD_GRAPH:

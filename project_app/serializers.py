@@ -38,8 +38,10 @@ class SaveNodeAndRelationshipsSerializer(serializers.Serializer):
     def create(self, validated_data):
         nodes = validated_data.get("nodes")
         relationships = validated_data.get("relationships")
+        project = validated_data["project"]
+        print(project.id)
         run_task.delay(task_type=0,
-                       project_id=validated_data["project"].id,
+                       project_id=project.id,
                        nodes=nodes,
                        relationships=relationships
                        )
