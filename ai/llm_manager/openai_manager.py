@@ -4,7 +4,7 @@ import os
 class OpenAIManager:
     def __init__(self, api_key,model_name="gpt-4o-mini",base_url=None,embededdding_model="text-embedding-3-small"):
         self.api_key = api_key
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(api_key=api_key,base_url="https://api.avalai.ir/v1")
         self.embededding_model = embededdding_model
         if base_url:
             self.client = OpenAI(api_key=api_key,base_url=base_url)
