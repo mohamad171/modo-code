@@ -11,7 +11,7 @@ from ai.llm_manager.langchain_manager import Embedding
 from ai.utils import get_nodes_for_embedding
 from project_app.models import Project, Task
 from ai.db_managers import Neo4jManager
-from tasks import run_task
+from .tasks import run_task
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
